@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EchoType — private, whisper-quiet dictation for developers</title>
+<meta name="description" content="Talk instead of type, even in a whisper. On-device dictation for developers — your voice never leaves your Mac. Free during beta.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0c0d0f;
+    --ink-raised: #131518;
+    --paper: #eae7df;
+    --hush: #8f8c83;
+    --line: #23252a;
+    --dot: #ff453a;
+    --ok: #7fd88f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  ::selection { background: var(--dot); color: var(--ink); }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 340;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* faint grain so the dark isn't flat */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.06 0 0 0 0 0.07 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  main { max-width: 44rem; margin: 0 auto; padding: 0 1.5rem; position: relative; }
+
+  /* ——— hero ——— */
+  header { padding: 4.5rem 0 1rem; }
+  .brand { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; letter-spacing: 0.12em; color: var(--hush); }
+  .brand .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--dot); margin-right: 0.5rem; animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
+  h1 {
+    font-size: clamp(2.6rem, 7vw, 4.2rem);
+    font-weight: 340;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 2.5rem 0 1.5rem;
+  }
+  h1 em { font-style: italic; font-weight: 500; }
+  .sub { font-size: 1.15rem; color: var(--hush); max-width: 36rem; }
+  .sub b { color: var(--paper); font-weight: 500; }
+
+  /* typing demo */
+  .demo {
+    margin: 3rem 0;
+    background: var(--ink-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.85rem;
+    line-height: 1.9;
+    overflow: hidden;
+  }
+  .demo .hush { color: var(--hush); }
+  .demo .hush .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--dot); margin: 0 0.35rem 1px 0; animation: pulse 1.2s ease-in-out infinite; }
+  .typed {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+    border-right: 2px solid var(--paper);
+    animation: typing 3.2s steps(52, end) 1.2s both, caret 0.9s step-end infinite;
+  }
+  @keyframes typing { from { width: 0 } to { width: 52ch } }
+  @keyframes caret { 50% { border-color: transparent } }
+
+  /* ——— sections ——— */
+  section { padding: 3.2rem 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 0.8rem; font-family: "IBM Plex Mono", monospace; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--hush); margin-bottom: 1.8rem; }
+  .feature { margin-bottom: 2.2rem; }
+  .feature h3 { font-size: 1.35rem; font-weight: 500; margin-bottom: 0.4rem; }
+  .feature p { color: var(--hush); max-width: 38rem; }
+  .feature p b, .feature p code { color: var(--paper); }
+  code { font-family: "IBM Plex Mono", monospace; font-size: 0.9em; }
+
+  .steps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  @media (max-width: 640px) { .steps-row { grid-template-columns: 1fr; } }
+  .step .n { font-family: "IBM Plex Mono", monospace; color: var(--dot); font-size: 0.8rem; }
+  .step h3 { font-size: 1.05rem; font-weight: 500; margin: 0.3rem 0; }
+  .step p { color: var(--hush); font-size: 0.95rem; }
+
+  .privacy {
+    font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+    line-height: 1.45;
+    max-width: 38rem;
+  }
+  .privacy em { font-style: italic; font-weight: 500; }
+
+  /* ——— download ——— */
+  .dl-card {
+    background: var(--ink-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+  }
+  .beta-tag { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.14em; color: var(--ok); border: 1px solid var(--ok); border-radius: 99px; padding: 0.25rem 0.8rem; margin-bottom: 1.2rem; }
+  .dl-btn {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--paper);
+    padding: 0.9rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .dl-btn:hover { box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--dot); transform: translateY(-1px); }
+  .dl-meta { font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--hush); margin-top: 0.9rem; }
+  .install-note {
+    margin-top: 1.4rem;
+    font-size: 0.92rem;
+    color: var(--hush);
+    border-top: 1px dashed var(--line);
+    padding-top: 1.2rem;
+  }
+  .install-note b { color: var(--paper); font-weight: 500; }
+
+  /* ——— faq ——— */
+  details { border-bottom: 1px solid var(--line); padding: 1rem 0; }
+  summary { cursor: pointer; font-size: 1.05rem; font-weight: 500; list-style: none; }
+  summary::before { content: "+ "; color: var(--dot); font-family: "IBM Plex Mono", monospace; }
+  details[open] summary::before { content: "− "; }
+  details p { color: var(--hush); padding: 0.7rem 0 0.3rem 1.15rem; max-width: 36rem; }
+
+  footer { padding: 3rem 0 4rem; border-top: 1px solid var(--line); color: var(--hush); font-size: 0.95rem; }
+  footer a { color: var(--paper); text-decoration-color: var(--dot); text-underline-offset: 3px; }
+  .foot-line { font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; margin-top: 1rem; }
+
+  /* staggered load-in */
+  header, section, footer { animation: rise 0.7s ease both; }
+  header { animation-delay: 0.05s }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand"><span class="dot"></span>ECHOTYPE</div>
+    <h1>Talk to your computer. <em>Quietly.</em></h1>
+    <p class="sub">Dictation built for developers who prompt AI all day. Speak at
+      <b>150&nbsp;words a minute</b> — even in a whisper — and watch the text land in your
+      terminal, IDE, or browser. <b>All of it transcribed on your Mac.</b> Nothing is uploaded, ever.</p>
+    <div class="demo" aria-hidden="true">
+      <div class="hush"><span class="dot"></span>holding&nbsp;⌘⇧space&nbsp;·&nbsp;whispering…</div>
+      <div><span class="hush">claude&nbsp;›</span> <span class="typed">add retry with exponential backoff to the fetch function</span></div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Why EchoType</h2>
+    <div class="feature">
+      <h3>Built for the AI-coding loop</h3>
+      <p>You prompt Claude Code or Cursor dozens of times a day, and typing is the slowest
+        link. Hold a hotkey, say what you want, release — punctuated text appears at your
+        cursor in about a second, in <b>whatever app has focus</b>.</p>
+    </div>
+    <div class="feature">
+      <h3>Whisper mode is not a metaphor</h3>
+      <p>The audio pipeline is tuned for quiet and whispered speech — gain-boosted, filtered,
+        and guarded against hallucination — so late-night sessions and open offices don't
+        mean broadcasting your prompts. A dedicated <b>quiet mode</b> switches to our most
+        accurate model with one click.</p>
+    </div>
+    <div class="feature">
+      <h3>Your voice never leaves the machine</h3>
+      <p>Transcription runs entirely on-device on Apple Silicon. No account, no cloud, no
+        audio retention — dictate proprietary code context <b>without a security review</b>.
+        It works the same on a plane with Wi-Fi off.</p>
+    </div>
+    <div class="feature">
+      <h3>Speaks fluent developer</h3>
+      <p><code>useEffect</code>, <code>kubectl</code>, your project's names — EchoType ships
+        tuned for technical vocabulary and <b>learns yours</b>: add custom terms once, stop
+        fixing them forever.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="steps-row">
+      <div class="step"><div class="n">01</div><h3>Hold the hotkey</h3><p>A subtle pill shows the mic is live — and only while you hold.</p></div>
+      <div class="step"><div class="n">02</div><h3>Say it</h3><p>At any volume, down to a whisper. Technical terms included.</p></div>
+      <div class="step"><div class="n">03</div><h3>Release</h3><p>Punctuated text appears at your cursor, ready to send.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="privacy">Dictation tools usually ship your voice to someone else's servers.
+      EchoType's answer is simpler: <em>there is no server.</em></p>
+  </section>
+
+  <section id="download">
+    <h2>Download</h2>
+    <div class="dl-card">
+      <div class="beta-tag">FREE DURING BETA</div><br>
+      <a class="dl-btn" href="https://github.com/aravindpranav/echotype-site/releases/latest/download/EchoType_0.1.0_aarch64.dmg">↓&nbsp;&nbsp;Download EchoType for macOS</a>
+      <div class="dl-meta">v0.1.0 beta · Apple Silicon · ~6 MB + one-time model download</div>
+      <p class="install-note"><b>First launch:</b> right-click the app and choose
+        <b>Open</b> (the beta isn't notarized yet, so macOS asks once). Guided setup
+        walks you through mic &amp; accessibility permissions in under three minutes.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Questions</h2>
+    <details>
+      <summary>Is my audio really never uploaded?</summary>
+      <p>Correct. Capture, processing, and transcription all happen on your machine — there is
+        no account and no server in the dictation path. The app works fully offline.</p>
+    </details>
+    <details>
+      <summary>What do I need to run it?</summary>
+      <p>An Apple Silicon Mac. Windows and Linux are on the roadmap — the entire stack is
+        cross-platform by design. Join the beta list below if you want either.</p>
+    </details>
+    <details>
+      <summary>Does it work in the terminal?</summary>
+      <p>Terminals are the primary target — verified in macOS Terminal, VS Code (editor and
+        integrated terminal), and Chrome, with a clipboard fallback for apps that reject
+        synthetic keystrokes.</p>
+    </details>
+    <details>
+      <summary>How is this different from macOS built-in dictation?</summary>
+      <p>Built-in dictation wants clear, loud speech, stumbles on technical terms, and isn't
+        built for the prompt-writing loop. EchoType is tuned for quiet speech and developer
+        vocabulary, injects anywhere, and never phones home.</p>
+    </details>
+    <details>
+      <summary>Voice commands? Meeting notes?</summary>
+      <p>No — EchoType does one thing: turn your speech into text at your cursor. For voice
+        control see Talon; for meetings see Granola.</p>
+    </details>
+    <details>
+      <summary>What does the beta cost?</summary>
+      <p>Nothing. EchoType is free while in beta. A paid Pro tier (larger models, streaming,
+        per-app profiles) arrives at v1.0 — beta users get an early-bird deal.</p>
+    </details>
+  </section>
+
+  <footer>
+    <p><b>Beta feedback &amp; updates:</b>
+      <a href="mailto:aravindpranavt@gmail.com?subject=EchoType%20beta">email the developer</a>
+      — bug reports, whispered-accuracy stories, and feature requests all welcome.
+      Want the Windows/Linux beta when it lands? Same address, say hi.</p>
+    <p class="foot-line">no account · no cloud · no noise</p>
+  </footer>
+</main>
+</body>
+</html>
