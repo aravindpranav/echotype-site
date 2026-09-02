@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EchoType — fast local dictation you can whisper at</title>
+<meta name="description" content="Transcription is 100% local: ~430 ms on your own Mac, works offline — and tuned to hear a whisper. Built for developers. Free during beta.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,500;1,9..144,340&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0c0d0f;
+    --ink-raised: #131518;
+    --paper: #eae7df;
+    --hush: #8f8c83;
+    --line: #23252a;
+    --dot: #ff453a;
+    --ok: #7fd88f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  ::selection { background: var(--dot); color: var(--ink); }
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 340;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.06 0 0 0 0 0.07 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  main { max-width: 42rem; margin: 0 auto; padding: 0 1.5rem; position: relative; }
+  a { color: var(--paper); text-decoration-color: var(--dot); text-underline-offset: 3px; }
+  em { font-style: italic; font-weight: 500; }
+  code { font-family: "IBM Plex Mono", monospace; font-size: 0.88em; }
+
+  header { padding: 4rem 0 0; }
+  .brand { font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; letter-spacing: 0.12em; color: var(--hush); }
+  .brand .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--dot); margin-right: 0.5rem; animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.35 } }
+  h1 {
+    font-size: clamp(2.4rem, 6.5vw, 3.8rem);
+    font-weight: 340;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 2.2rem 0 1.4rem;
+  }
+  .lede { font-size: 1.12rem; color: var(--hush); }
+  .lede b { color: var(--paper); font-weight: 500; }
+
+  /* demo video */
+  .demo-wrap { margin: 2.6rem 0 0; }
+  .demo-wrap video {
+    display: block;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--ink-raised);
+  }
+  .demo-fallback {
+    background: var(--ink-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.85rem;
+    line-height: 1.9;
+    overflow: hidden;
+  }
+  .demo-fallback .hush { color: var(--hush); }
+  .demo-fallback .hush .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--dot); margin: 0 0.35rem 1px 0; animation: pulse 1.2s ease-in-out infinite; }
+  .typed {
+    display: inline-block; white-space: nowrap; overflow: hidden; max-width: 100%;
+    border-right: 2px solid var(--paper);
+    animation: typing 3.2s steps(52, end) 1.2s both, caret 0.9s step-end infinite;
+  }
+  @keyframes typing { from { width: 0 } to { width: 52ch } }
+  @keyframes caret { 50% { border-color: transparent } }
+  .demo-caption { font-family: "IBM Plex Mono", monospace; font-size: 0.75rem; color: var(--hush); margin-top: 0.6rem; }
+
+  section { padding: 3rem 0 0; }
+  section + section { margin-top: 3rem; border-top: 1px solid var(--line); }
+
+  /* spec sheet */
+  .spec { width: 100%; border-collapse: collapse; font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .spec td { padding: 0.65rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .spec td:first-child { color: var(--hush); width: 46%; padding-right: 1rem; }
+  .spec tr:last-child td { border-bottom: none; }
+
+  .prose p { margin-bottom: 1.15rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose .aside { color: var(--hush); font-size: 0.98rem; }
+
+  .pull-note { display:block; font-size:.55em; font-style:normal; opacity:.55; margin-top:.6em; }
+  .pull {
+    font-size: clamp(1.35rem, 3.4vw, 1.8rem);
+    line-height: 1.45;
+    max-width: 36rem;
+  }
+
+  /* download */
+  .dl-card {
+    background: var(--ink-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+  }
+  .beta-tag { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; letter-spacing: 0.14em; color: var(--ok); border: 1px solid var(--ok); border-radius: 99px; padding: 0.25rem 0.8rem; margin-bottom: 1.2rem; }
+  .dl-btn {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--paper);
+    padding: 0.9rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .dl-btn:hover { box-shadow: 0 0 0 3px var(--ink), 0 0 0 5px var(--dot); transform: translateY(-1px); }
+  .dl-meta { font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--hush); margin-top: 0.9rem; }
+  .install-note {
+    margin-top: 1.4rem; font-size: 0.92rem; color: var(--hush);
+    border-top: 1px dashed var(--line); padding-top: 1.2rem;
+  }
+  .install-note b { color: var(--paper); font-weight: 500; }
+
+  /* rough edges */
+  .edges { list-style: none; }
+  .edges li { padding: 0.55rem 0 0.55rem 1.4rem; border-bottom: 1px solid var(--line); color: var(--hush); position: relative; font-size: 0.98rem; }
+  .edges li::before { content: "~"; position: absolute; left: 0; color: var(--dot); font-family: "IBM Plex Mono", monospace; }
+  .edges li:last-child { border-bottom: none; }
+  .edges b { color: var(--paper); font-weight: 500; }
+
+  h2 { font-size: 0.8rem; font-family: "IBM Plex Mono", monospace; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--hush); margin-bottom: 1.6rem; }
+
+  footer { margin-top: 3rem; padding: 2.6rem 0 4rem; border-top: 1px solid var(--line); color: var(--hush); font-size: 0.98rem; }
+  .foot-line { font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; margin-top: 1.2rem; }
+
+  /* Entrance animation on the header only: animating whole sections from
+     opacity 0 leaves the page blank in any context that pauses CSS. */
+  header { animation: rise 0.7s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important } }
+
+  /* ——— wide-screen editorial layout ———
+     Narrow centered column reads as empty on big monitors. On desktop the
+     page becomes a framed sheet: hairline rails at the content edges, section
+     labels offset into a left gutter, hero copy and demo side by side. */
+  @media (min-width: 1100px) {
+    main {
+      max-width: 64rem;
+      padding: 0 3.5rem;
+      border-inline: 1px solid var(--line);
+    }
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      column-gap: 3.5rem;
+      padding-top: 5rem;
+    }
+    .brand { grid-column: 1 / -1; }
+    header h1 { grid-column: 1; }
+    header .lede { grid-column: 1; }
+    .demo-wrap {
+      grid-column: 2;
+      grid-row: 2 / span 2;
+      align-self: center;
+      margin-top: 2.2rem;
+    }
+    section, footer {
+      display: grid;
+      grid-template-columns: 10rem minmax(0, 1fr);
+      column-gap: 3.5rem;
+    }
+    section > h2 {
+      grid-column: 1;
+      text-align: right;
+      position: sticky;
+      top: 2.5rem;
+      align-self: start;
+      margin-bottom: 0;
+    }
+    section > :not(h2), footer > * { grid-column: 2; }
+    .prose p { max-width: 40rem; }
+  }
+  @media (min-width: 1900px) {
+    html { font-size: 17.5px; }
+    main { max-width: 70rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="brand"><span class="dot"></span>ECHOTYPE</div>
+    <h1>Talk at 150 words a minute. <em>Your Mac keeps up.</em></h1>
+    <p class="lede">I prompt Claude Code all day, and typing was the slowest part of the loop.
+      Cloud dictation swaps that for a different wait — upload, queue, transcribe, download —
+      on every single sentence. EchoType runs the model locally: <b>hold a key, speak, release</b>,
+      and the text is at your cursor in about half a second, <b>~430 ms of it transcription</b>.
+      The transcription never leaves your Mac — no round trip, no spinner, no connection required. <b>And you can say it under your
+      breath</b> — this one is built to hear a whisper.</p>
+
+    <div class="demo-wrap">
+      <video id="demo" src="demo.mp4" autoplay muted loop playsinline controls preload="metadata"></video>
+      <div class="demo-fallback" id="demo-fallback" hidden aria-hidden="true">
+        <div class="hush"><span class="dot"></span>holding&nbsp;⌘⇧space&nbsp;·&nbsp;whispering…</div>
+        <div><span class="hush">claude&nbsp;›</span> <span class="typed">add retry with exponential backoff to the fetch function</span></div>
+      </div>
+      <div class="demo-caption">me, dictating into VS Code — real time, one take</div>
+    </div>
+    <script>
+      (function () {
+        var v = document.getElementById("demo");
+        function fallback() {
+          v.style.display = "none";
+          document.getElementById("demo-fallback").hidden = false;
+        }
+        v.addEventListener("error", fallback, true);
+        // Some contexts swallow the error event for missing sources: if no
+        // metadata arrived shortly after load, show the typed demo instead.
+        setTimeout(function () {
+          if (v.readyState === 0) fallback();
+        }, 2000);
+      })();
+    </script>
+  </header>
+
+  <section>
+    <h2>The numbers</h2>
+    <table class="spec">
+      <tr><td>transcription latency</td><td>~430 ms for a full sentence (M4, default model)</td></tr>
+      <tr><td>voice to cursor</td><td>roughly half a second, measured end to end</td></tr>
+      <tr><td>network round trips</td><td>zero for transcription — whisper.cpp on Metal, on your machine. The optional AI cleanup below is the one exception</td></tr>
+      <tr><td>works offline</td><td>transcription: fully. Planes, trains, dead hotel wifi. Cleanup needs internet and quietly steps aside without it — you get your raw words</td></tr>
+      <tr><td>download</td><td>5.9 MB app · 465 MB model, downloaded once at setup</td></tr>
+      <tr><td>works in</td><td>anything with a cursor — verified in Terminal, VS Code, Chrome</td></tr>
+      <tr><td>accounts, telemetry, uploads</td><td>none — one opt-in exception: AI cleanup sends transcribed text (never audio) to OpenAI or Anthropic on your key. Off by default.</td></tr>
+    </table>
+  </section>
+
+  <section class="prose">
+    <h2>What it actually does</h2>
+    <p>You hold <code>⌘⇧space</code> (rebindable), say what you want, and let go. About half a
+      second later the punctuated text is sitting at your cursor — in the terminal, the IDE, a
+      browser field, wherever you were. A small pill shows while the mic is live, and only while
+      you hold. Fast enough that dictating stops feeling like a detour and starts feeling like
+      typing.</p>
+    <p><b>You can whisper at it.</b> Most dictation wants announcer volume; the audio
+      pipeline here is tuned the other way — gain-normalised, filtered, and guarded against the
+      hallucinations quiet audio provokes — so an open-plan office at 4pm or a sleeping house at
+      1am doesn't mean broadcasting your prompts. A <b>quiet mode</b> in the menu bar switches
+      to the largest local model, which hears whispers markedly better in exchange for a second
+      or two of latency. This is the part nothing else does well, and I publish what I
+      measure against a recorded test corpus.</p>
+    <p><b>Transcription doesn't care whether you're online.</b> The model sits on your disk and
+      runs on the GPU already in your Mac, so a plane, a train, a conference wifi captive
+      portal, or an outage at somebody else's data center all make exactly zero difference to
+      your words appearing. That stays true the day some vendor changes their pricing —
+      dictation itself never depends on anyone's API.</p>
+    <p>Technical vocabulary survives. There's a plain-text dictionary that biases recognition:
+      during development, "feature branch" kept coming out as "future branch" — one line in
+      <code>dictionary.txt</code> fixed it permanently. Ship your own project names the same way.</p>
+    <p><b>Optional: AI cleanup.</b> Off by default. Turn it on and EchoType sends the
+      transcribed <b>text</b> — never audio — to OpenAI or Anthropic on <b>your own API key</b>,
+      to strip the ums and resolve mid-sentence corrections ("one month ago, I mean two months
+      ago" comes back as the version you meant). Your voice never leaves the Mac, the key lives
+      in your Keychain, and if the network is slow, down, or the model gets creative, EchoType
+      injects your raw words instead — a divergence guard rejects anything too different from
+      what you actually said.</p>
+    <p class="aside">Two smaller things I care about: out of the box nothing is ever uploaded —
+      no account, no telemetry, so proprietary code context never needs a security review
+      (enable cleanup and exactly one thing changes: transcribed text goes to the provider you
+      chose, on your key). And if a recording
+      is silent or the model hallucinates its way into text you never said, EchoType suppresses
+      it and injects nothing. A dictation tool typing words you didn't say is the worst thing
+      it can do, so that path is guarded twice.</p>
+  </section>
+
+  <section>
+    <p class="pull">Every other dictation tool is racing the network on your behalf.
+      EchoType's answer is simpler: <em>there is no server.</em>
+      <span class="pull-note">(The optional AI cleanup is the one feature that talks to one —
+      somebody else's, on your key.)</span></p>
+  </section>
+
+  <section id="download">
+    <h2>Download</h2>
+    <div class="dl-card">
+      <div class="beta-tag">FREE DURING BETA</div><br>
+      <a class="dl-btn" href="https://github.com/aravindpranav/echotype-site/releases/latest/download/EchoType_0.1.0_aarch64.dmg">↓&nbsp;&nbsp;Download for macOS</a>
+      <div class="dl-meta">v0.1.0 beta · Apple Silicon · 5.9 MB · no account needed</div>
+      <p class="install-note"><b>First launch:</b> right-click the app and choose <b>Open</b> —
+        this beta doesn't carry an Apple developer certificate yet (it's ad-hoc signed, which
+        is to say: signed by nobody in particular), so macOS asks you to confirm once. Setup
+        then walks you through mic &amp; accessibility permissions and the model download;
+        you'll be dictating in a few minutes.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Rough edges (it's a beta)</h2>
+    <ul class="edges">
+      <li><b>Apple Silicon only</b> for now. The stack (Rust + whisper.cpp) is cross-platform
+        by design; Windows and Linux come after the mac version earns it.</li>
+      <li><b>Whispered accuracy is good, not solved.</b> Normal speech is ~95% for me; whispers
+        are noticeably behind and improving each release. Quiet mode helps a lot.</li>
+      <li><b>After each beta update</b>, macOS may need Accessibility re-granted: remove
+        EchoType from System Settings → Privacy &amp; Security → Accessibility and add it
+        back. Beta builds are re-signed every release, which quietly invalidates the old
+        permission. The app now detects this and tells you.</li>
+      <li>The recording pill doesn't show over fullscreen apps (macOS window rules; dictation
+        itself works fine there).</li>
+      <li>Tested where I work: Terminal, VS Code, Chrome. Slack and iTerm2 reports welcome.</li>
+      <li>English only, for the moment.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>I read every email: <a href="mailto:aravindpranavt@gmail.com?subject=EchoType%20beta">aravindpranavt@gmail.com</a>
+      — bug reports, whisper stories, "it mangled this word" screenshots, and requests for the
+      Windows/Linux beta all land in the same inbox.</p>
+    <p class="foot-line">no account · no cloud required · no noise</p>
+  </footer>
+</main>
+</body>
+</html>
